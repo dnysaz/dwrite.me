@@ -11,6 +11,15 @@ export type ActionState =
   | { message?: string; error?: string; success?: boolean }
   | undefined
 
+/**
+ * Revalidate semua halaman publik yang menampilkan konten blog.
+ * Dipanggil setiap kali ada perubahan post/profile/OG image supaya
+ * halaman static/ISR (homepage, /blog, artikel, dst) langsung segar.
+ */
+function revalidatePublicContent() {
+  revalidatePath('/', 'layout')
+}
+
 function getPublicAvatarUrl(path: string) {
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${path}`
 }
@@ -372,6 +381,7 @@ export async function updateProfile(
     return { error: `Failed to save profile: ${error.message}` }
   }
 
+  revalidatePublicContent()
   revalidatePath('/dashboard')
   return { message: 'Profile updated successfully.' }
 }
@@ -413,7 +423,7 @@ export async function updateOgImage(
     return { error: `Failed to save setting: ${settingError.message}` }
   }
 
-  revalidatePath('/')
+  revalidatePublicContent()
   revalidatePath('/dashboard')
   return { message: 'OG image updated successfully.' }
 }
@@ -497,8 +507,8 @@ export async function deletePost(formData: FormData) {
     }
   }
 
+  revalidatePublicContent()
   revalidatePath('/dashboard')
-  revalidatePath('/blog', 'layout')
 }
 
 export type GeminiArticleResult = {
@@ -896,8 +906,8 @@ export async function updatePost(
     if (oldPath) await supabase.storage.from('post-images').remove([oldPath])
   }
 
+  revalidatePublicContent()
   revalidatePath('/dashboard')
-  revalidatePath('/blog', 'layout')
   return { success: true }
 }
 
@@ -1076,7 +1086,7 @@ export async function createPost(
     return { error: `Failed to save post: ${error.message}` }
   }
 
+  revalidatePublicContent()
   revalidatePath('/dashboard')
-  revalidatePath('/blog', 'layout')
   return { success: true }
 }
