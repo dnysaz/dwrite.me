@@ -1,6 +1,7 @@
 'use client'
 
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { LayoutDashboard, FileText, Inbox, Settings } from 'lucide-react'
 import { OverviewTab } from '@/components/dashboard/overview-tab'
 import { BlogTab } from '@/components/dashboard/blog-tab'
@@ -67,20 +68,41 @@ export function DashboardClient({
   geminiKeyStatus: GeminiKeyStatus
   encryptionConfigured: boolean
 }) {
-  const router = useRouter()
   const searchParams = useSearchParams()
 
+  // Tab dikelola sebagai state lokal — pindah tab 100% instan karena semua
+  // tab dirender dari data yang sudah ada di client (tanpa roundtrip server).
+  // URL tetap disinkronkan lewat history API agar link ?tab=... tetap bisa
+  // di-bookmark dan tombol back antar halaman tetap wajar.
   const requestedTab = searchParams.get('tab')
-  const activeTab: TabId = tabs.some((tab) => tab.id === requestedTab)
-    ? (requestedTab as TabId)
-    : 'dashboard'
+  const [activeTab, setActiveTab] = useState<TabId>(() =>
+    tabs.some((tab) => tab.id === requestedTab)
+      ? (requestedTab as TabId)
+      : 'dashboard',
+  )
 
   const goToTab = (id: TabId) => {
-    router.push(
+    setActiveTab(id)
+    window.history.replaceState(
+      null,
+      '',
       id === 'dashboard' ? '/dashboard' : `/dashboard?tab=${id}`,
-      { scroll: false },
     )
   }
+
+  // Sinkronkan bila URL berubah dari luar (mis. redirect dari create-post
+  // ke /dashboard?tab=blog).
+  useEffect(() => {
+    const requested = searchParams.get('tab')
+    if (
+      requested &&
+      tabs.some((tab) => tab.id === requested) &&
+      requested !== activeTab
+    ) {
+      setActiveTab(requested as TabId)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
   return (
     <div className="flex flex-col gap-8">

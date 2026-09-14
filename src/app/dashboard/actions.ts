@@ -247,69 +247,64 @@ function validateThumbnailFile(file: File) {
   return null
 }
 
-export async function getUser() {
+export const getUser = cache(async () => {
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
   return user
-}
+})
 
 export const getDashboardData = cache(async () => {
   const supabase = await createClient()
   const user = await getUser()
   if (!user) return null
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .maybeSingle()
-
-  const { data: posts } = await supabase
-    .from('blog_posts')
-    .select(
-      'id, title, slug, status, published_at, read_time_minutes, categories:blog_categories(name)',
-    )
-    .order('created_at', { ascending: false })
-
-  const { count: postsCount } = await supabase
-    .from('blog_posts')
-    .select('*', { count: 'exact', head: true })
-
-  const { count: messagesCount } = await supabase
-    .from('messages')
-    .select('*', { count: 'exact', head: true })
-
-  const { count: unreadMessagesCount } = await supabase
-    .from('messages')
-    .select('*', { count: 'exact', head: true })
-    .eq('status', 'new')
-
-  const { data: messages } = await supabase
-    .from('messages')
-    .select('id, name, email, message, is_read, status, created_at')
-    .order('created_at', { ascending: false })
-    .limit(100)
-
-  const { data: ogImageSetting } = await supabase
-    .from('site_settings')
-    .select('value')
-    .eq('key', 'site_og_image')
-    .maybeSingle()
+  // Semua query dijalankan PARALEL — sebelumnya berurutan sehingga dashboard lama.
+  const [
+    profileRes,
+    postsRes,
+    postsCountRes,
+    messagesCountRes,
+    unreadRes,
+    messagesRes,
+    ogImageRes,
+  ] = await Promise.all([
+    supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
+    supabase
+      .from('blog_posts')
+      .select(
+        'id, title, slug, status, published_at, read_time_minutes, categories:blog_categories(name)',
+      )
+      .order('created_at', { ascending: false }),
+    supabase.from('blog_posts').select('*', { count: 'exact', head: true }),
+    supabase.from('messages').select('*', { count: 'exact', head: true }),
+    supabase
+      .from('messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'new'),
+    supabase
+      .from('messages')
+      .select('id, name, email, message, is_read, status, created_at')
+      .order('created_at', { ascending: false })
+      .limit(100),
+    supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'site_og_image')
+      .maybeSingle(),
+  ])
 
   return {
     user,
-    profile,
-    posts: posts ?? [],
-    postsCount: postsCount ?? 0,
-    messagesCount: messagesCount ?? 0,
-    unreadMessagesCount: unreadMessagesCount ?? 0,
-    messages: messages ?? [],
+    profile: profileRes.data,
+    posts: postsRes.data ?? [],
+    postsCount: postsCountRes.count ?? 0,
+    messagesCount: messagesCountRes.count ?? 0,
+    unreadMessagesCount: unreadRes.count ?? 0,
+    messages: messagesRes.data ?? [],
     siteOgImage:
-      typeof ogImageSetting?.value === 'string'
-        ? ogImageSetting.value
-        : null,
+      typeof ogImageRes.data?.value === 'string' ? ogImageRes.data.value : null,
   }
 })
 
