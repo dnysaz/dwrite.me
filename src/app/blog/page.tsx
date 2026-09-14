@@ -5,6 +5,10 @@ import { getPublishedPosts } from '@/lib/blog'
 import { getSiteOgImage } from '@/lib/site'
 import { siteUrl } from '@/lib/seo'
 
+// ISR: halaman daftar post di-cache 5 menit (menit kecepatan, tetap fresh).
+
+export const revalidate = 300
+
 export const metadata: Metadata = {
   title: 'Blog',
   description:

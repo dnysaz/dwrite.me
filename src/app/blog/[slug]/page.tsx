@@ -5,10 +5,19 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { Navbar } from '@/components/navbar'
 import { RelatedPostCard } from '@/components/blog-grid'
-import { getPostBySlug, getRelatedPosts, publicImage } from '@/lib/blog'
+import { getPostBySlug, getPublishedPosts, getRelatedPosts, publicImage } from '@/lib/blog'
 import { sanitizePostContent } from '@/lib/sanitize'
 import { getSiteOgImage } from '@/lib/site'
 import { firstWords, httpsUrl, SITE_NAME, siteUrl, stripHtmlToText } from '@/lib/seo'
+
+// ISR: halaman artikel di-cache 5 menit; revalidatePath saat publish/update
+// (dari dashboard) menyegarkan segera.
+export const revalidate = 300
+
+export async function generateStaticParams() {
+  const posts = await getPublishedPosts()
+  return posts.map((post) => ({ slug: post.slug }))
+}
 
 export async function generateMetadata({
   params,

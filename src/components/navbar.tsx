@@ -1,5 +1,8 @@
+'use client'
+
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import { MobileNav } from '@/components/mobile-nav'
 import { NavLinks } from '@/components/nav-links'
 
@@ -11,10 +14,22 @@ const navLinks = [
   { href: '/help', label: 'Help' },
 ]
 
-export async function Navbar() {
-  const supabase = await createClient()
-  const { data } = await supabase.auth.getUser()
-  const user = data?.user
+export function Navbar() {
+  const [loggedIn, setLoggedIn] = useState(false)
+
+  // Cek login di sisi client dari cookie sesi Supabase.
+  // Ini membuat Navbar tidak pernah menyentuh cookies() di server,
+  // sehingga halaman publik tetap bisa dirender statis/ISR (cepat).
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getSession().then(({ data }) => {
+      setLoggedIn(Boolean(data.session))
+    })
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setLoggedIn(Boolean(session))
+    })
+    return () => sub.subscription.unsubscribe()
+  }, [])
 
   return (
     <header className="sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur">
@@ -27,10 +42,10 @@ export async function Navbar() {
         </Link>
 
         <div className="hidden items-center gap-5 text-base font-medium sm:flex sm:gap-6">
-          <NavLinks links={navLinks} loggedIn={Boolean(user)} />
+          <NavLinks links={navLinks} loggedIn={loggedIn} />
         </div>
 
-        <MobileNav links={navLinks} loggedIn={Boolean(user)} />
+        <MobileNav links={navLinks} loggedIn={loggedIn} />
       </nav>
     </header>
   )

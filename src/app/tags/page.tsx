@@ -4,6 +4,8 @@ import { Navbar } from '@/components/navbar'
 import { collectTags, getPublishedPosts } from '@/lib/blog'
 import { siteUrl } from '@/lib/seo'
 
+export const revalidate = 300
+
 export const metadata: Metadata = {
   title: 'Tags',
   description: 'Browse all tags used across the blog articles.',

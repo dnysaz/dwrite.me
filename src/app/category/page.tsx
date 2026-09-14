@@ -5,6 +5,8 @@ import { getPublishedPosts } from '@/lib/blog'
 import { SITE_CATEGORIES } from '@/lib/categories'
 import { siteUrl } from '@/lib/seo'
 
+export const revalidate = 300
+
 export const metadata: Metadata = {
   title: 'Categories',
   description: 'Browse all blog categories.',

@@ -4,9 +4,25 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { Navbar } from '@/components/navbar'
 import { BlogGrid } from '@/components/blog-grid'
-import { getPostsByCategory } from '@/lib/blog'
+import { getPostsByCategory, getPublishedPosts } from '@/lib/blog'
 import { getSiteOgImage } from '@/lib/site'
 import { siteUrl } from '@/lib/seo'
+
+export const revalidate = 300
+
+export async function generateStaticParams() {
+  const posts = await getPublishedPosts()
+  const categories = [
+    ...new Set(
+      posts
+        .map((post) => post.category_name)
+        .filter((name): name is string => Boolean(name)),
+    ),
+  ]
+  return categories.map((category) => ({
+    category: encodeURIComponent(category),
+  }))
+}
 
 type Params = { params: Promise<{ category: string }> }
 

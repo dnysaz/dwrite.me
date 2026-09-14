@@ -1,8 +1,8 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAnonClient } from '@/lib/supabase/server'
 import { httpsUrl } from '@/lib/seo'
 
 export async function getSiteOgImage() {
-  const supabase = await createClient()
+  const supabase = createAnonClient()
   const { data } = await supabase
     .from('site_settings')
     .select('value')

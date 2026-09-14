@@ -2,6 +2,25 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // Fast path: pengunjung anonim (tanpa cookie sesi Supabase) tidak perlu
+  // verifikasi token sama sekali — langsung lewat. Ini menghemat satu
+  // network hop auth di setiap request halaman publik.
+  const hasAuthCookie = request.cookies.getAll().some((cookie) =>
+    cookie.name.includes('-auth-token'),
+  )
+  if (!hasAuthCookie && pathname !== '/login') {
+    const isProtectedRoute = pathname.startsWith('/dashboard')
+    if (isProtectedRoute) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      url.searchParams.set('next', pathname)
+      return NextResponse.redirect(url)
+    }
+    return NextResponse.next({ request })
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   })
@@ -40,7 +59,6 @@ export async function updateSession(request: NextRequest) {
       (typeof claims.exp !== 'number' || claims.exp * 1000 > Date.now()),
   )
 
-  const { pathname } = request.nextUrl
   const isProtectedRoute = pathname.startsWith('/dashboard')
   const isAuthRoute = pathname === '/login'
 

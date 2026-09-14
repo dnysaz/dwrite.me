@@ -4,9 +4,16 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { Navbar } from '@/components/navbar'
 import { BlogGrid } from '@/components/blog-grid'
-import { getPostsByTag } from '@/lib/blog'
+import { collectTags, getPostsByTag, getPublishedPosts } from '@/lib/blog'
 import { getSiteOgImage } from '@/lib/site'
 import { siteUrl } from '@/lib/seo'
+
+export const revalidate = 300
+
+export async function generateStaticParams() {
+  const tags = collectTags(await getPublishedPosts())
+  return tags.map((tag) => ({ tag: encodeURIComponent(tag) }))
+}
 
 type Params = { params: Promise<{ tag: string }> }
 

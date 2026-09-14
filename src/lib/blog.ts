@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAnonClient } from '@/lib/supabase/server'
 
 export type BlogPost = {
   id: string
@@ -58,7 +58,7 @@ function normalize(row: RawRow): BlogPost {
 }
 
 export async function getPublishedPosts(): Promise<BlogPost[]> {
-  const supabase = await createClient()
+  const supabase = createAnonClient()
   const { data } = await supabase
     .from('blog_posts')
     .select(
@@ -72,7 +72,7 @@ export async function getPublishedPosts(): Promise<BlogPost[]> {
 }
 
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
-  const supabase = await createClient()
+  const supabase = createAnonClient()
   const { data } = await supabase
     .from('blog_posts')
     .select(
@@ -138,7 +138,7 @@ export async function getRelatedPosts(
   categoryName: string | null,
   count = 3,
 ): Promise<BlogPost[]> {
-  const supabase = await createClient()
+  const supabase = createAnonClient()
   const { data } = await supabase
     .from('blog_posts')
     .select(
