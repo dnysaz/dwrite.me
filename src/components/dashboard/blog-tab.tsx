@@ -1,3 +1,4 @@
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ExternalLink, PenLine, Plus, Trash2 } from 'lucide-react'
 import { deletePost } from '@/app/dashboard/actions'
@@ -22,6 +23,7 @@ function categoryName(
 }
 
 export function BlogTab({ posts }: { posts: DashboardPost[] }) {
+  const router = useRouter()
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
@@ -32,6 +34,8 @@ export function BlogTab({ posts }: { posts: DashboardPost[] }) {
           </span>
           <Link
             href="/dashboard/create-post"
+            onMouseEnter={() => router.prefetch('/dashboard/create-post')}
+            onFocus={() => router.prefetch('/dashboard/create-post')}
             className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" />
@@ -76,6 +80,9 @@ export function BlogTab({ posts }: { posts: DashboardPost[] }) {
               <div className="flex shrink-0 items-center gap-2">
                 <Link
                   href={`/dashboard/create-post?id=${post.id}`}
+                  onMouseEnter={() =>
+                    router.prefetch(`/dashboard/create-post?id=${post.id}`)
+                  }
                   className="inline-flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm font-semibold transition-colors hover:bg-muted"
                 >
                   <PenLine className="h-4 w-4" />

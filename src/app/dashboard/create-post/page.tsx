@@ -1,4 +1,3 @@
-import { redirect } from 'next/navigation'
 import { Navbar } from '@/components/navbar'
 import { createClient } from '@/lib/supabase/server'
 import { sanitizePostContent } from '@/lib/sanitize'
@@ -30,16 +29,13 @@ export default async function CreatePostPage({
 }) {
   const { id } = await searchParams
 
-  const supabase = await createClient()
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser()
-
-  if (error || !user) redirect('/login')
-
+  // Tidak ada cek auth di sini: middleware sudah memproteksi semua route
+  // /dashboard/* (redirect ke /login bila belum auth), dan action simpan
+  // post tetap memverifikasi sesi sendiri. Ini menghemat satu network hop
+  // auth sebelum halaman bisa dirender.
   let post: EditablePost | null = null
   if (id) {
+    const supabase = await createClient()
     const { data } = await supabase
       .from('blog_posts')
       .select(
