@@ -12,7 +12,6 @@ export default function Error({
   return (
     <ErrorScreen
       code="500"
-      emoji="🐞"
       icon="bug"
       title="A tiny bug got loose."
       description="Something went wrong on our side while loading this page. It has been noted — give it another try."

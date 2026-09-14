@@ -32,7 +32,6 @@ export type ErrorIconName = keyof typeof ICONS
 
 export function ErrorScreen({
   code,
-  emoji,
   icon,
   title,
   description,
@@ -42,7 +41,6 @@ export function ErrorScreen({
   secondaryLabel,
 }: {
   code: string
-  emoji: string
   icon: ErrorIconName
   title: string
   description: string
@@ -63,9 +61,6 @@ export function ErrorScreen({
 
       <div className="relative flex flex-col items-center gap-6">
         <div className="relative flex h-40 w-40 items-center justify-center rounded-full border border-border bg-card shadow-lg">
-          <span className="absolute -right-2 -top-3 text-4xl" aria-hidden>
-            {emoji}
-          </span>
           <Icon className="h-20 w-20 text-primary" strokeWidth={1.5} />
           <span
             aria-hidden

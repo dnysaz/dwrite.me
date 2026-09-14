@@ -9,7 +9,6 @@ export default function UnauthorizedPage() {
   return (
     <ErrorScreen
       code="401"
-      emoji="🤖"
       icon="bot"
       title="You need to sign in first."
       description="This area is only for the blog owner. Sign in to continue, or head back to the blog."

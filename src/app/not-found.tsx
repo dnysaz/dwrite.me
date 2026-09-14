@@ -9,7 +9,6 @@ export default function NotFound() {
   return (
     <ErrorScreen
       code="404"
-      emoji="👻"
       icon="ghost"
       title="This page went ghost-hunting."
       description="The page you are looking for does not exist, moved, or never did. Let us get you back to something real."

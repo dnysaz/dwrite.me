@@ -13,7 +13,6 @@ export default function GlobalError({
       <body className="h-full">
         <ErrorScreen
           code="500"
-          emoji="🌩️"
           icon="cloudoff"
           title="Something crashed up there."
           description="The whole page hit a snag it could not recover from. A refresh usually fixes this one."
